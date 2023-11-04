@@ -5,11 +5,11 @@ use skia_safe::{
     gl::{Format, FramebufferInfo},
     surfaces, DirectContext, SurfaceOrigin,
   },
-  Color, ColorType,
+  Canvas, ColorType,
 };
 use windows::Win32::UI::HiDpi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
 
-pub fn run(title: &str, width: u32, height: u32) {
+pub fn run(title: &str, width: u32, height: u32, mut on_draw: impl FnMut(&Canvas, u32, u32)) {
   // Fix blurry windows
   #[cfg(windows)]
   unsafe {
@@ -62,7 +62,7 @@ pub fn run(title: &str, width: u32, height: u32) {
   let mut surface = surfaces::wrap_backend_render_target(
     &mut gr_ctx,
     &render_target,
-    SurfaceOrigin::TopLeft,
+    SurfaceOrigin::BottomLeft,
     ColorType::RGBA8888,
     None,
     None,
@@ -83,8 +83,7 @@ pub fn run(title: &str, width: u32, height: u32) {
     }
 
     // Output
-    canvas.clear(Color::BLACK);
-    // TODO: Do all your drawing here
+    on_draw(canvas, width, height);
     gr_ctx.flush_and_submit();
     window.gl_swap_window();
   }
