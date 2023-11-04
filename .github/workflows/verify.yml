@@ -1,0 +1,125 @@
+name: Verify
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Use Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+      - name: Cache dependencies
+        id: cache-result
+        uses: Swatinem/rust-cache@v2
+      - name: Install Cargo-vcpkg
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-vcpkg
+      - name: Build Vcpkg dependencies
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: vcpkg
+          args: build
+      - name: Check for errors
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Use Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          components: rustfmt
+      - name: Check Rust formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all --check
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Use Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          components: clippy
+      - name: Cache dependencies
+        id: cache-result
+        uses: Swatinem/rust-cache@v2
+      - name: Install Cargo-vcpkg
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-vcpkg
+      - name: Build Vcpkg dependencies
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: vcpkg
+          args: build
+      - name: Lint Rust code
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-targets --all-features
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Use Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+      - name: Cache dependencies
+        id: cache-result
+        uses: Swatinem/rust-cache@v2
+      - name: Install Cargo-vcpkg
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-vcpkg
+      - name: Build Vcpkg dependencies
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: vcpkg
+          args: build
+      - name: Test Rust code
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
