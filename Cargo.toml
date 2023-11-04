@@ -8,7 +8,7 @@ license = "MIT"
 publish = false
 
 [package.metadata.vcpkg]
-dependencies = ["sdl2"]
+dependencies = ["sdl2", "sdl2-image"]
 git = "https://github.com/microsoft/vcpkg"
 rev = "9f03078bdcbab3ad8c1e3927c40c3fb48e42501f"
 
@@ -21,11 +21,18 @@ lto = "fat"
 panic = "abort"
 codegen-units = 1
 
-[dependencies.skia-safe]
-version = "0.68.0"
-features = ["gl"]
+[dependencies]
+gl = "0.14.0"
 
 [dependencies.sdl2]
 version = "0.35.2"
 default-features = false
-features = ["static-link","use-vcpkg"]
+features = ["image", "static-link","use-vcpkg"]
+
+[dependencies.skia-safe]
+version = "0.68.0"
+features = ["gl"]
+
+[dependencies.windows]
+version = "0.51.1"
+features = ["Win32_UI_HiDpi"]
