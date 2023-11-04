@@ -19,6 +19,21 @@ jobs:
           toolchain: stable
           override: true
           profile: minimal
+      - name: Cache dependencies
+        id: cache-result
+        uses: Swatinem/rust-cache@v2
+      - name: Install Cargo-vcpkg
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-vcpkg
+      - name: Build Vcpkg dependencies
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: vcpkg
+          args: build
       - name: Check for errors
         uses: actions-rs/cargo@v1
         with:
@@ -56,6 +71,21 @@ jobs:
           override: true
           profile: minimal
           components: clippy
+      - name: Cache dependencies
+        id: cache-result
+        uses: Swatinem/rust-cache@v2
+      - name: Install Cargo-vcpkg
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-vcpkg
+      - name: Build Vcpkg dependencies
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: vcpkg
+          args: build
       - name: Lint Rust code
         uses: actions-rs/cargo@v1
         with:
@@ -74,6 +104,21 @@ jobs:
           toolchain: stable
           override: true
           profile: minimal
+      - name: Cache dependencies
+        id: cache-result
+        uses: Swatinem/rust-cache@v2
+      - name: Install Cargo-vcpkg
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-vcpkg
+      - name: Build Vcpkg dependencies
+        if: steps.cache-result.outputs.cache-hit != 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: vcpkg
+          args: build
       - name: Test Rust code
         uses: actions-rs/cargo@v1
         with:
