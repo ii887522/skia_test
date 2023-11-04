@@ -16,6 +16,7 @@ jobs:
       - name: Use Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           override: true
           profile: minimal
       - name: Check for errors
@@ -32,6 +33,7 @@ jobs:
       - name: Use Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           override: true
           profile: minimal
           components: rustfmt
@@ -50,6 +52,7 @@ jobs:
       - name: Use Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           override: true
           profile: minimal
           components: clippy
@@ -68,6 +71,7 @@ jobs:
       - name: Use Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           override: true
           profile: minimal
       - name: Test Rust code
