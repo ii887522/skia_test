@@ -9,6 +9,7 @@ use skia_safe::{
   },
   Canvas, Color, ColorType,
 };
+use std::time::Instant;
 use windows::Win32::UI::HiDpi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
 
 pub fn run(mut app: App<impl View>) {
@@ -80,12 +81,27 @@ pub fn run(mut app: App<impl View>) {
 
   // Game loop
   let mut event_pump = sdl.event_pump().unwrap();
+  let mut prev = Instant::now();
   loop {
     // Input
     for event in event_pump.poll_iter() {
       if let Event::Quit { .. } = event {
         return;
       }
+    }
+
+    // Before process
+    let now = Instant::now();
+    let mut dt_left = (now - prev).as_secs_f32();
+    prev = now;
+    let mut ticks_left = 8; // 8 max ticks per frame
+
+    // Process
+    while ticks_left > 0 && dt_left > 0f32 {
+      let dt = dt_left.min(1f32 / 120f32); // 120 ticks per second
+      app.tick(dt);
+      dt_left -= dt;
+      ticks_left -= 1;
     }
 
     // Output
@@ -110,6 +126,10 @@ pub struct App<'a, Child: View = Unit> {
 }
 
 impl<Child: View> View for App<'_, Child> {
+  fn tick(&mut self, dt: f32) {
+    self.child.tick(dt);
+  }
+
   fn draw(&mut self, canvas: &Canvas, constraint: Box2D) {
     canvas.clear(self.color.unwrap_or(Color::BLACK));
     self.child.draw(canvas, constraint);
