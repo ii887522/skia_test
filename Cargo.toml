@@ -15,6 +15,10 @@ rev = "9f03078bdcbab3ad8c1e3927c40c3fb48e42501f"
 [package.metadata.vcpkg.target]
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static-md" }
 
+[lib]
+name = "skia_test"
+path = "src/lib/mod.rs"
+
 [profile.release]
 strip = "debuginfo"
 lto = "fat"
@@ -23,11 +27,13 @@ codegen-units = 1
 
 [dependencies]
 gl = "0.14.0"
+tinyrand = "0.5.0"
+tinyrand-std = "0.5.0"
 
 [dependencies.sdl2]
 version = "0.35.2"
 default-features = false
-features = ["image", "static-link","use-vcpkg"]
+features = ["image", "static-link", "use-vcpkg"]
 
 [dependencies.skia-safe]
 version = "0.68.0"
