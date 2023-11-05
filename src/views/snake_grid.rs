@@ -74,8 +74,19 @@ impl SnakeGrid {
 
 impl View for SnakeGrid {
   fn tick(&mut self, dt: f32) {
-    // Move the snake in the pre-determined direction every 250 ms
-    self.ticker.advance(dt, || {
+    self.ticker.advance(dt, |ticker| {
+      if self.data[self.snake_position - DIM] == 1 // Snake will hit the top wall ?
+        || self.data[self.snake_position + 1] == 1 // Snake will hit the right wall ?
+        || self.data[self.snake_position + DIM] == 1 // Snake will hit the bottom wall ?
+        || self.data[self.snake_position - 1] == 1
+      // Snake will hit the left wall ?
+      {
+        // Game over
+        ticker.pause();
+        return;
+      }
+
+      // Move the snake in the pre-determined direction
       self.data[self.snake_position] = 0; // Set the current snake position to air
       self.snake_position = match self.snake_direction {
         Direction::UP => self.snake_position - DIM,   // Set the upper cell to snake
