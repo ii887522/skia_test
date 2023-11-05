@@ -1,5 +1,6 @@
 use super::{Unit, View};
 use crate::models::Box2D;
+use sdl2::event::Event;
 use skia_safe::Canvas;
 
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
@@ -11,28 +12,50 @@ pub struct Grid<Maker: FnMut(usize) -> Child, Child: View = Unit> {
 }
 
 impl<Maker: FnMut(usize) -> Child, Child: View> View for Grid<Maker, Child> {
+  fn on_event(&mut self, event: &Event) {
+    // Preconditions
+    debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
+    debug_assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");
+
+    for i in 0..self.dim.0 * self.dim.1 {
+      (self.maker)(i).on_event(event);
+    }
+  }
+
+  fn tick(&mut self, dt: f32) {
+    // Preconditions
+    debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
+    debug_assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");
+
+    for i in 0..self.dim.0 * self.dim.1 {
+      (self.maker)(i).tick(dt);
+    }
+  }
+
   fn draw(&mut self, canvas: &Canvas, constraint: Box2D) {
     // Preconditions
-    assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
-    assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");
+    debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
+    debug_assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");
 
+    #[cfg(debug_assertions)]
     if let Some((width, height)) = self.gap {
       if let Some(value) = width {
-        assert!(value > 0f32, "gap.0 must be a positive value");
+        debug_assert!(value > 0f32, "gap.0 must be a positive value");
       }
 
       if let Some(value) = height {
-        assert!(value > 0f32, "gap.1 must be a positive value");
+        debug_assert!(value > 0f32, "gap.1 must be a positive value");
       }
     }
 
+    #[cfg(debug_assertions)]
     if let Some((width, height)) = self.size {
       if let Some(value) = width {
-        assert!(value > 0f32, "size.0 must be a positive value");
+        debug_assert!(value > 0f32, "size.0 must be a positive value");
       }
 
       if let Some(value) = height {
-        assert!(value > 0f32, "size.1 must be a positive value");
+        debug_assert!(value > 0f32, "size.1 must be a positive value");
       }
     }
 

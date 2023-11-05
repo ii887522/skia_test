@@ -1,9 +1,9 @@
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Direction {
-  UP,
-  RIGHT,
-  DOWN,
-  LEFT,
+  Up,
+  Right,
+  Down,
+  Left,
 }
 
-pub const DIRECTIONS: &[Direction] = &[Direction::UP, Direction::RIGHT, Direction::DOWN, Direction::LEFT];
+pub const DIRECTIONS: &[Direction] = &[Direction::Up, Direction::Right, Direction::Down, Direction::Left];

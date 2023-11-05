@@ -88,6 +88,8 @@ pub fn run(mut app: App<impl View>) {
       if let Event::Quit { .. } = event {
         return;
       }
+
+      app.on_event(&event);
     }
 
     // Before process
@@ -126,6 +128,10 @@ pub struct App<'a, Child: View = Unit> {
 }
 
 impl<Child: View> View for App<'_, Child> {
+  fn on_event(&mut self, event: &Event) {
+    self.child.on_event(event);
+  }
+
   fn tick(&mut self, dt: f32) {
     self.child.tick(dt);
   }
