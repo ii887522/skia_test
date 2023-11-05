@@ -1,3 +1,5 @@
+use super::{Unit, View};
+use crate::models::Box2D;
 use sdl2::{event::Event, image::LoadSurface, surface::Surface, video::GLProfile};
 use skia_safe::{
   gpu::{
@@ -5,11 +7,15 @@ use skia_safe::{
     gl::{Format, FramebufferInfo},
     surfaces, DirectContext, SurfaceOrigin,
   },
-  Canvas, ColorType,
+  Canvas, Color, ColorType,
 };
 use windows::Win32::UI::HiDpi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
 
-pub fn run(title: &str, width: u32, height: u32, mut on_draw: impl FnMut(&Canvas, u32, u32)) {
+pub fn run(mut app: App<impl View>) {
+  // Preconditions
+  assert_ne!(app.size.0, 0, "size.0 must be a positive integer");
+  assert_ne!(app.size.1, 0, "size.1 must be a positive integer");
+
   // Fix blurry windows
   #[cfg(windows)]
   unsafe {
@@ -32,7 +38,7 @@ pub fn run(title: &str, width: u32, height: u32, mut on_draw: impl FnMut(&Canvas
 
   // Prepare a window
   let mut window = vid_subsys
-    .window(title, width, height)
+    .window(app.title, app.size.0, app.size.1)
     .opengl()
     .allow_highdpi()
     .position_centered()
@@ -50,7 +56,7 @@ pub fn run(title: &str, width: u32, height: u32, mut on_draw: impl FnMut(&Canvas
   // Initialize Skia engine on top of the OpenGL context
   let mut gr_ctx = DirectContext::new_gl(None, None).unwrap();
   let render_target = backend_render_targets::make_gl(
-    (width as _, height as _),
+    (app.size.0 as _, app.size.1 as _),
     0,
     8,
     FramebufferInfo {
@@ -83,8 +89,29 @@ pub fn run(title: &str, width: u32, height: u32, mut on_draw: impl FnMut(&Canvas
     }
 
     // Output
-    on_draw(canvas, width, height);
+    app.draw(
+      canvas,
+      Box2D {
+        position: (0f32, 0f32),
+        size: (app.size.0 as _, app.size.1 as _),
+      },
+    );
     gr_ctx.flush_and_submit();
     window.gl_swap_window();
+  }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct App<'a, Child: View = Unit> {
+  pub title: &'a str,
+  pub size: (u32, u32),
+  pub color: Option<Color>,
+  pub child: Child,
+}
+
+impl<Child: View> View for App<'_, Child> {
+  fn draw(&mut self, canvas: &Canvas, constraint: Box2D) {
+    canvas.clear(self.color.unwrap_or(Color::BLACK));
+    self.child.draw(canvas, constraint);
   }
 }
