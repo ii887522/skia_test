@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod models;
 mod views;
 
 use skia_test::views::{app, App};
