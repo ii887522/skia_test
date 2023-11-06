@@ -5,6 +5,12 @@ pub struct Ticker {
   is_running: bool,
 }
 
+impl Default for Ticker {
+  fn default() -> Self {
+    Self::new(1f32)
+  }
+}
+
 impl Ticker {
   pub fn new(interval: impl Into<Option<f32>> + Copy) -> Self {
     // Preconditions
@@ -17,6 +23,10 @@ impl Ticker {
       elasped: 0f32,
       is_running: true,
     }
+  }
+
+  pub const fn is_running(&self) -> bool {
+    self.is_running
   }
 
   pub fn advance(&mut self, dt: f32, on_tick: impl FnOnce(&mut Ticker)) {
