@@ -1,3 +1,4 @@
+pub mod asset_loader;
 pub mod sparse_set;
 pub mod ticker;
 

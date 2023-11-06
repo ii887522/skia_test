@@ -11,6 +11,7 @@ fn main() {
     title: "Snake",
     size: (1600, 900),
     color: None,
+    play_audio: true,
     child: SnakeGrid::new(),
   });
 }

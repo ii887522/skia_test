@@ -1,5 +1,5 @@
 use super::View;
-use crate::models::Box2D;
+use crate::{models::Box2D, Context};
 use sdl2::event::Event;
 use skia_safe::Canvas;
 
@@ -12,27 +12,27 @@ pub struct Grid<Maker> {
 }
 
 impl<Maker: FnMut(usize) -> Child, Child: View> View for Grid<Maker> {
-  fn on_event(&mut self, event: &Event) {
+  fn on_event(&mut self, context: &mut Context, event: &Event) {
     // Preconditions
     debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
     debug_assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");
 
     for i in 0..self.dim.0 * self.dim.1 {
-      (self.maker)(i).on_event(event);
+      (self.maker)(i).on_event(context, event);
     }
   }
 
-  fn tick(&mut self, dt: f32) {
+  fn tick(&mut self, context: &mut Context, dt: f32) {
     // Preconditions
     debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
     debug_assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");
 
     for i in 0..self.dim.0 * self.dim.1 {
-      (self.maker)(i).tick(dt);
+      (self.maker)(i).tick(context, dt);
     }
   }
 
-  fn draw(&mut self, canvas: &Canvas, constraint: Box2D) {
+  fn draw(&mut self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
     // Preconditions
     debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
     debug_assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");
@@ -86,6 +86,7 @@ impl<Maker: FnMut(usize) -> Child, Child: View> View for Grid<Maker> {
 
     for i in 0..self.dim.0 * self.dim.1 {
       (self.maker)(i).draw(
+        context,
         canvas,
         Box2D {
           position: (

@@ -8,7 +8,7 @@ license = "MIT"
 publish = false
 
 [package.metadata.vcpkg]
-dependencies = ["sdl2", "sdl2-image"]
+dependencies = ["sdl2", "sdl2-image", "sdl2-mixer"]
 git = "https://github.com/microsoft/vcpkg"
 rev = "9f03078bdcbab3ad8c1e3927c40c3fb48e42501f"
 
@@ -33,7 +33,7 @@ tinyrand-std = "0.5.0"
 [dependencies.sdl2]
 version = "0.35.2"
 default-features = false
-features = ["image", "static-link", "use-vcpkg"]
+features = ["image", "mixer", "static-link", "use-vcpkg"]
 
 [dependencies.skia-safe]
 version = "0.68.0"
