@@ -15,7 +15,6 @@ impl<T: TryFrom<usize, Error = impl Debug> + Into<usize> + Copy> SparseSet<T> {
     }
 
     self.dense.push(key);
-
     let key = key.into();
 
     // Allocate necessary memory for sparse array to avoid panic later due to index out of bounds

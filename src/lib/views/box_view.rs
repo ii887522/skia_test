@@ -1,5 +1,5 @@
 use super::View;
-use crate::models::Box2D;
+use crate::{models::Box2D, Context};
 use skia_safe::{Canvas, Color, Paint, Rect};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
@@ -8,7 +8,7 @@ pub struct BoxView {
 }
 
 impl View for BoxView {
-  fn draw(&mut self, canvas: &Canvas, constraint: Box2D) {
+  fn draw(&mut self, _context: &mut Context, canvas: &Canvas, constraint: Box2D) {
     canvas.draw_rect(
       Rect::from_xywh(
         constraint.position.0,

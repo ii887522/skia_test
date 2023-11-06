@@ -1,6 +1,6 @@
 use super::{Unit, View};
-use crate::models::Box2D;
-use sdl2::{event::Event, image::LoadSurface, surface::Surface, video::GLProfile};
+use crate::{models::Box2D, Context};
+use sdl2::{event::Event, image::LoadSurface, mixer, surface::Surface, video::GLProfile};
 use skia_safe::{
   gpu::{
     backend_render_targets,
@@ -24,6 +24,14 @@ pub fn run(mut app: App<impl View>) {
   }
 
   let sdl = sdl2::init().unwrap();
+  let mut context = Context::new();
+
+  if app.play_audio {
+    // Initialize audio engine
+    mixer::open_audio(44100, mixer::DEFAULT_FORMAT, 2, 256).unwrap();
+    context.init_audio()
+  }
+
   let vid_subsys = sdl.video().unwrap();
 
   // Configure OpenGL attributes
@@ -45,7 +53,7 @@ pub fn run(mut app: App<impl View>) {
     .position_centered()
     .build()
     .unwrap();
-  window.set_icon(Surface::from_file("assets/favicon.png").unwrap());
+  window.set_icon(Surface::from_file("assets/images/favicon.png").unwrap());
 
   // Initialize OpenGL context and make it current in this thread
   let _gl_ctx = window.gl_create_context().unwrap();
@@ -82,14 +90,14 @@ pub fn run(mut app: App<impl View>) {
   // Game loop
   let mut event_pump = sdl.event_pump().unwrap();
   let mut prev = Instant::now();
-  loop {
+  'running: loop {
     // Input
     for event in event_pump.poll_iter() {
       if let Event::Quit { .. } = event {
-        return;
+        break 'running;
       }
 
-      app.on_event(&event);
+      app.on_event(&mut context, &event);
     }
 
     // Before process
@@ -101,13 +109,14 @@ pub fn run(mut app: App<impl View>) {
     // Process
     while ticks_left > 0 && dt_left > 0f32 {
       let dt = dt_left.min(1f32 / 120f32); // 120 ticks per second
-      app.tick(dt);
+      app.tick(&mut context, dt);
       dt_left -= dt;
       ticks_left -= 1;
     }
 
     // Output
     app.draw(
+      &mut context,
       canvas,
       Box2D {
         position: (0f32, 0f32),
@@ -117,6 +126,11 @@ pub fn run(mut app: App<impl View>) {
     gr_ctx.flush_and_submit();
     window.gl_swap_window();
   }
+
+  // Cleanup
+  if app.play_audio {
+    mixer::close_audio();
+  }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -124,20 +138,21 @@ pub struct App<'a, Child = Unit> {
   pub title: &'a str,
   pub size: (u32, u32),
   pub color: Option<Color>,
+  pub play_audio: bool,
   pub child: Child,
 }
 
 impl<Child: View> View for App<'_, Child> {
-  fn on_event(&mut self, event: &Event) {
-    self.child.on_event(event);
+  fn on_event(&mut self, context: &mut Context, event: &Event) {
+    self.child.on_event(context, event);
   }
 
-  fn tick(&mut self, dt: f32) {
-    self.child.tick(dt);
+  fn tick(&mut self, context: &mut Context, dt: f32) {
+    self.child.tick(context, dt);
   }
 
-  fn draw(&mut self, canvas: &Canvas, constraint: Box2D) {
+  fn draw(&mut self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
     canvas.clear(self.color.unwrap_or(Color::BLACK));
-    self.child.draw(canvas, constraint);
+    self.child.draw(context, canvas, constraint);
   }
 }
