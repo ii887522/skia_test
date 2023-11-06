@@ -7,7 +7,10 @@ use skia_test::{
   views::{BoxView, Grid, View},
   Context,
 };
-use std::collections::VecDeque;
+use std::{
+  collections::VecDeque,
+  fmt::{self, Debug, Formatter},
+};
 use tinyrand::RandRange;
 use tinyrand_std::thread_rand;
 
@@ -25,17 +28,34 @@ const COLORS: &[Color] = &[Color::DARK_GRAY, Color::RED, Color::CYAN, Color::GRE
 
 const DIM: u16 = 31; // Follow the dimension of the below data grid
 
-#[derive(Debug, PartialEq)]
+const DIE_SOUND: &str = "die";
+const EAT_SOUND: &str = "eat";
+const TURN_SOUND: &str = "turn";
+
 pub(crate) struct SnakeGrid {
   snake: Snake,
   change_snake_direction: bool,
   ticker: Ticker,
   data: Vec<u8>,
   air_indices: SparseSet<u16>,
+  on_die: Box<dyn FnMut()>,
+}
+
+impl Debug for SnakeGrid {
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+    fmt
+      .debug_struct("SnakeGrid")
+      .field("snake", &self.snake)
+      .field("change_snake_direction", &self.change_snake_direction)
+      .field("ticker", &self.ticker)
+      .field("data", &self.data)
+      .field("air_indices", &self.air_indices)
+      .finish_non_exhaustive()
+  }
 }
 
 impl SnakeGrid {
-  pub(crate) fn new() -> Self {
+  pub(crate) fn new(on_die: impl FnMut() + 'static) -> Self {
     // Initialize snake moving direction
     let snake_direction = DIRECTIONS[thread_rand().next_range(0..DIRECTIONS.len())];
 
@@ -88,6 +108,7 @@ impl SnakeGrid {
         .flat_map(move |x| (1u16..DIM - 1u16).map(move |y| (x, y)))
         .map(|(x, y)| x * DIM + y)
         .collect::<_>(),
+      on_die: Box::new(on_die),
     };
 
     // The center of the data grid is already allocated by the snake, so remove this data grid index from the free list.
@@ -105,7 +126,7 @@ impl SnakeGrid {
 
 impl View for SnakeGrid {
   fn on_event(&mut self, context: &mut Context, event: &Event) {
-    if !self.change_snake_direction {
+    if !self.ticker.is_running() || !self.change_snake_direction {
       return;
     }
 
@@ -127,7 +148,7 @@ impl View for SnakeGrid {
             direction: Direction::Up,
           });
 
-          context.play_sound("turn");
+          context.play_sound(TURN_SOUND);
         },
         Keycode::D | Keycode::Right
           if self.snake.head.direction != Direction::Right && self.snake.head.direction != Direction::Left =>
@@ -139,7 +160,7 @@ impl View for SnakeGrid {
             direction: Direction::Right,
           });
 
-          context.play_sound("turn");
+          context.play_sound(TURN_SOUND);
         },
         Keycode::S | Keycode::Down
           if self.snake.head.direction != Direction::Down && self.snake.head.direction != Direction::Up =>
@@ -151,7 +172,7 @@ impl View for SnakeGrid {
             direction: Direction::Down,
           });
 
-          context.play_sound("turn");
+          context.play_sound(TURN_SOUND);
         },
         Keycode::A | Keycode::Left
           if self.snake.head.direction != Direction::Left && self.snake.head.direction != Direction::Right =>
@@ -163,7 +184,7 @@ impl View for SnakeGrid {
             direction: Direction::Left,
           });
 
-          context.play_sound("turn");
+          context.play_sound(TURN_SOUND);
         },
         _ => {
           // Assumption above failed. Rollback this variable
@@ -193,7 +214,8 @@ impl View for SnakeGrid {
       {
         // Game over
         ticker.pause();
-        context.play_sound("die");
+        context.play_sound(DIE_SOUND);
+        (self.on_die)();
         return;
       }
 
@@ -239,7 +261,7 @@ impl View for SnakeGrid {
 
     if is_food_eaten {
       self.spawn_food();
-      context.play_sound("eat");
+      context.play_sound(EAT_SOUND);
     }
   }
 
