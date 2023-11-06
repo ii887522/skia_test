@@ -2,7 +2,7 @@ use crate::models::SnakeJoint;
 use sdl2::{event::Event, keyboard::Keycode};
 use skia_safe::{Canvas, Color};
 use skia_test::{
-  common::Ticker,
+  common::{SparseSet, Ticker},
   models::{direction::DIRECTIONS, Box2D, Direction},
   views::{BoxView, Grid, View},
 };
@@ -24,7 +24,7 @@ const COLORS: &[Color] = &[Color::DARK_GRAY, Color::RED, Color::CYAN, Color::GRE
 
 const DIM: usize = 31; // Follow the dimension of the below data grid
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct SnakeGrid {
   snake_head_position: usize,
   snake_last_position: usize,
@@ -34,6 +34,7 @@ pub(crate) struct SnakeGrid {
   ticker: Ticker,
   data: Vec<u8>,
   snake_joint_queue: VecDeque<SnakeJoint>,
+  air_indices: SparseSet<u16>,
 }
 
 impl SnakeGrid {
@@ -86,27 +87,22 @@ impl SnakeGrid {
         1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1,
       ],
       snake_joint_queue: VecDeque::new(),
+      air_indices: (1u16..DIM as u16 - 1u16)
+        .flat_map(move |x| (1u16..DIM as u16 - 1u16).map(move |y| (x, y)))
+        .map(|(x, y)| x * DIM as u16 + y)
+        .collect::<_>(),
     };
+
+    // The center of the data grid is already allocated by the snake, so remove this data grid index from the free list.
+    this.air_indices.remove(((DIM >> 1) * DIM + (DIM >> 1)) as u16);
 
     this.spawn_food();
     this
   }
 
   fn spawn_food(&mut self) {
-    let mut rand = thread_rand();
-
-    // Find a food location to spawn
-    let (food_x, food_y) = (rand.next_range(1..DIM - 1), rand.next_range(1..DIM - 1));
-
-    // Spawn the food at the chosen location
-    self.data[food_y * DIM
-      + food_x
-      + if food_x == (DIM >> 1) && food_y == (DIM >> 1) {
-        // Spawn food location clashes with the snake location ?
-        1
-      } else {
-        0
-      }] = FOOD;
+    // Spawn a food at a random free location
+    self.data[self.air_indices.remove_random_key() as usize] = FOOD;
   }
 }
 
@@ -206,6 +202,7 @@ impl View for SnakeGrid {
       } else {
         // Move the snake last in the pre-determined direction
         self.data[self.snake_last_position] = AIR;
+        self.air_indices.add(self.snake_last_position as _);
 
         if let Some(joint) = self.snake_joint_queue.front() {
           if self.snake_last_position == joint.index as _ {
@@ -231,6 +228,7 @@ impl View for SnakeGrid {
       };
 
       self.data[self.snake_head_position] = SNAKE;
+      self.air_indices.remove(self.snake_head_position as _);
     });
 
     if is_food_eaten {

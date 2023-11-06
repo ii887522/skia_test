@@ -120,7 +120,7 @@ pub fn run(mut app: App<impl View>) {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct App<'a, Child: View = Unit> {
+pub struct App<'a, Child = Unit> {
   pub title: &'a str,
   pub size: (u32, u32),
   pub color: Option<Color>,

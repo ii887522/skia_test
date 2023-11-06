@@ -1,17 +1,17 @@
-use super::{Unit, View};
+use super::View;
 use crate::models::Box2D;
 use sdl2::event::Event;
 use skia_safe::Canvas;
 
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
-pub struct Grid<Maker: FnMut(usize) -> Child, Child: View = Unit> {
+pub struct Grid<Maker> {
   pub dim: (usize, usize),
   pub gap: Option<(Option<f32>, Option<f32>)>,
   pub size: Option<(Option<f32>, Option<f32>)>,
   pub maker: Maker,
 }
 
-impl<Maker: FnMut(usize) -> Child, Child: View> View for Grid<Maker, Child> {
+impl<Maker: FnMut(usize) -> Child, Child: View> View for Grid<Maker> {
   fn on_event(&mut self, event: &Event) {
     // Preconditions
     debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
