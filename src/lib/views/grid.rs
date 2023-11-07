@@ -32,7 +32,7 @@ impl<Maker: Fn(usize) -> Child, Child: View> View for Grid<Maker> {
     }
   }
 
-  fn draw(&self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
+  fn draw(&self, context: &Context, canvas: &Canvas, constraint: Box2D) {
     // Preconditions
     debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
     debug_assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");

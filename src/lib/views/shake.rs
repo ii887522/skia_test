@@ -41,7 +41,7 @@ impl<Child: View> View for Shake<Child> {
     self.child.tick(context, dt);
   }
 
-  fn draw(&self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
+  fn draw(&self, context: &Context, canvas: &Canvas, constraint: Box2D) {
     if self.is_enabled {
       canvas.save();
       canvas.translate((self.strength * self.angle.cos(), self.strength * self.angle.sin()));
