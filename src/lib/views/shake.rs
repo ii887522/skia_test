@@ -2,20 +2,21 @@ use super::{Unit, View};
 use crate::{common::Ticker, models::Box2D, Context};
 use sdl2::event::Event;
 use skia_safe::Canvas;
+use std::{cell::Cell, rc::Rc};
 use tinyrand::Rand;
 use tinyrand_std::thread_rand;
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, PartialOrd)]
+#[derive(Debug, Default, PartialEq, PartialOrd)]
 pub struct Shake<Child = Unit> {
   strength: f32,
   angle: f32,
   ticker: Ticker,
-  is_enabled: bool,
+  is_enabled: Rc<Cell<bool>>,
   child: Child,
 }
 
 impl<Child> Shake<Child> {
-  pub fn new(is_enabled: bool, child: Child) -> Self {
+  pub fn new(is_enabled: Rc<Cell<bool>>, child: Child) -> Self {
     Self {
       strength: 16f32,
       angle: 0f32,
@@ -32,7 +33,7 @@ impl<Child: View> View for Shake<Child> {
   }
 
   fn tick(&mut self, context: &mut Context, dt: f32) {
-    if self.is_enabled {
+    if self.is_enabled.get() {
       self.ticker.advance(dt, |_| {
         self.angle = (thread_rand().next_u32() as f32 / u32::MAX as f32) * 2f32 * std::f32::consts::PI;
       });
@@ -41,15 +42,15 @@ impl<Child: View> View for Shake<Child> {
     self.child.tick(context, dt);
   }
 
-  fn draw(&mut self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
-    if self.is_enabled {
+  fn draw(&self, context: &Context, canvas: &Canvas, constraint: Box2D) {
+    if self.is_enabled.get() {
       canvas.save();
       canvas.translate((self.strength * self.angle.cos(), self.strength * self.angle.sin()));
     }
 
     self.child.draw(context, canvas, constraint);
 
-    if self.is_enabled {
+    if self.is_enabled.get() {
       canvas.restore();
     }
   }

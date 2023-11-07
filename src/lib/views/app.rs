@@ -116,7 +116,7 @@ pub fn run(mut app: App<impl View>) {
 
     // Output
     app.draw(
-      &mut context,
+      &context,
       canvas,
       Box2D {
         position: (0f32, 0f32),
@@ -151,7 +151,7 @@ impl<Child: View> View for App<'_, Child> {
     self.child.tick(context, dt);
   }
 
-  fn draw(&mut self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
+  fn draw(&self, context: &Context, canvas: &Canvas, constraint: Box2D) {
     canvas.clear(self.color.unwrap_or(Color::BLACK));
     self.child.draw(context, canvas, constraint);
   }

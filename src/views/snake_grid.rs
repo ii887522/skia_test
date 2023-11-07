@@ -265,7 +265,7 @@ impl View for SnakeGrid {
     }
   }
 
-  fn draw(&mut self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
+  fn draw(&self, context: &Context, canvas: &Canvas, constraint: Box2D) {
     Grid {
       dim: (DIM as _, DIM as _),
       gap: Some((Some(8f32), Some(8f32))),
