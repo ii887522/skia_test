@@ -151,7 +151,7 @@ impl<Child: View> View for App<'_, Child> {
     self.child.tick(context, dt);
   }
 
-  fn draw(&mut self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
+  fn draw(&self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
     canvas.clear(self.color.unwrap_or(Color::BLACK));
     self.child.draw(context, canvas, constraint);
   }

@@ -14,13 +14,22 @@ pub(crate) struct GamePage {
 
 impl GamePage {
   pub fn new() -> Self {
+    let mut shake = false;
+
     Self {
-      child: Shake::new(false, SnakeGrid::new(|| {})),
+      child: Shake::new(
+        shake,
+        SnakeGrid::new(move || {
+          shake = true;
+        }),
+      ),
     }
   }
 }
 
 impl View for GamePage {
+  // TODO: Maybe define make trait method ?
+
   fn on_event(&mut self, context: &mut Context, event: &Event) {
     self.child.on_event(context, event);
   }
@@ -29,7 +38,7 @@ impl View for GamePage {
     self.child.tick(context, dt);
   }
 
-  fn draw(&mut self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
+  fn draw(&self, context: &mut Context, canvas: &Canvas, constraint: Box2D) {
     self.child.draw(context, canvas, constraint);
   }
 }
