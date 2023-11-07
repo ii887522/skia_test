@@ -116,7 +116,7 @@ pub fn run(mut app: App<impl View>) {
 
     // Output
     app.draw(
-      &mut context,
+      &context,
       canvas,
       Box2D {
         position: (0f32, 0f32),
