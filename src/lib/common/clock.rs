@@ -1,17 +1,17 @@
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
-pub struct Ticker {
+pub struct Clock {
   interval: f32,
   elasped: f32,
   is_running: bool,
 }
 
-impl Default for Ticker {
+impl Default for Clock {
   fn default() -> Self {
-    Self::new(1f32)
+    Self::new(None)
   }
 }
 
-impl Ticker {
+impl Clock {
   pub fn new(interval: impl Into<Option<f32>> + Copy) -> Self {
     // Preconditions
     if let Some(value) = interval.into() {
@@ -29,7 +29,7 @@ impl Ticker {
     self.is_running
   }
 
-  pub fn advance(&mut self, dt: f32, on_tick: impl FnOnce(&mut Ticker)) {
+  pub fn advance(&mut self, dt: f32, on_tick: impl FnOnce(&mut Self)) {
     if !self.is_running {
       return;
     }
