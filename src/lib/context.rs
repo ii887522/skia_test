@@ -1,22 +1,29 @@
-use crate::common::asset_loader;
+use crate::{common::asset_loader, Engine};
 use sdl2::mixer::{Channel, Chunk};
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-#[derive(Default, PartialEq)]
 pub struct Context {
-  sounds: Option<HashMap<String, Chunk>>,
+  engine: Rc<RefCell<Engine>>,
+  sounds: RefCell<HashMap<String, Chunk>>,
 }
 
 impl Context {
-  pub(super) const fn new() -> Self {
-    Self { sounds: None }
+  pub(super) fn init_audio(&self) {
+    self.sounds.replace(asset_loader::load_sounds("assets/sounds/"));
   }
 
-  pub(super) fn init_audio(&mut self) {
-    self.sounds = Some(asset_loader::load_sounds("assets/sounds/"));
+  pub(super) fn get_engine(&self) -> Rc<RefCell<Engine>> {
+    Rc::clone(&self.engine)
   }
 
   pub fn play_sound(&self, name: &str) {
-    Channel::all().play(&self.sounds.as_ref().unwrap()[name], 0).unwrap();
+    Channel::all().play(&self.sounds.borrow()[name], 0).unwrap();
+  }
+}
+
+thread_local! {
+  pub static CONTEXT: Context = Context {
+    engine: Rc::new(RefCell::new(Engine::default())),
+    sounds: RefCell::new(HashMap::new()),
   }
 }

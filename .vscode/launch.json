@@ -1,0 +1,47 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'skia_test'",
+      "cargo": {
+        "args": ["test", "--no-run", "--lib", "--package=skia_test"],
+        "filter": {
+          "name": "skia_test",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'skia_test'",
+      "cargo": {
+        "args": ["build", "--bin=skia_test", "--package=skia_test"],
+        "filter": {
+          "name": "skia_test",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'skia_test'",
+      "cargo": {
+        "args": ["test", "--no-run", "--bin=skia_test", "--package=skia_test"],
+        "filter": {
+          "name": "skia_test",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

@@ -1,47 +1,65 @@
-use crate::views::SnakeGrid;
-use sdl2::event::Event;
-use skia_safe::Canvas;
+use crate::layouts::SnakeGrid;
 use skia_test::{
-  common::Ticker,
+  common::{Clock, Sharable},
+  layouts::{stateful_layout::State, Shake, StatefulLayout},
   models::Box2D,
-  views::{Shake, View},
-  Context,
+  view::IntoViewFromStatefulLayout,
+  Context, View,
 };
-use std::{cell::Cell, rc::Rc};
+use std::{
+  cell::{Cell, RefCell},
+  rc::Rc,
+};
 
-#[derive(Debug)]
-pub(crate) struct GamePage {
-  ticker: Ticker,
+#[derive(Copy, Clone, Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) struct GamePage;
+
+impl StatefulLayout for GamePage {
+  fn get_key(&self) -> &str {
+    "pages/game_page"
+  }
+
+  fn make_state(&mut self) -> Rc<RefCell<dyn State>> {
+    Rc::new(RefCell::new(GamePageState::new()))
+  }
+}
+
+#[derive(Debug, Default, PartialEq, PartialOrd)]
+struct GamePageState {
   shake: Rc<Cell<bool>>,
-  child: Shake<SnakeGrid>,
+  shake_clock: Clock,
 }
 
-impl GamePage {
-  pub fn new() -> Self {
-    let shake = Rc::new(Cell::new(false));
-
+impl GamePageState {
+  fn new() -> Self {
     Self {
-      shake: Rc::clone(&shake),
-      ticker: Ticker::new(0.25f32),
-      child: Shake::new(Rc::clone(&shake), SnakeGrid::new(move || shake.set(true))),
+      shake: Rc::new(Cell::new(false)),
+      shake_clock: Clock::new(0.25f32),
     }
   }
 }
 
-impl View for GamePage {
-  fn on_event(&mut self, context: &mut Context, event: &Event) {
-    self.child.on_event(context, event);
-  }
-
-  fn tick(&mut self, context: &mut Context, dt: f32) {
+impl State for GamePageState {
+  fn tick(&mut self, _context: &Context, dt: f32) {
     if self.shake.get() {
-      self.ticker.advance(dt, |_| self.shake.set(false));
+      self.shake_clock.advance(dt, |clock| {
+        self.shake.set(false);
+        clock.pause();
+      });
     }
-
-    self.child.tick(context, dt);
   }
 
-  fn draw(&self, context: &Context, canvas: &Canvas, constraint: Box2D) {
-    self.child.draw(context, canvas, constraint);
+  fn make(&self, _constraint: Box2D) -> Option<Sharable<View>> {
+    Shake {
+      is_enabled: Rc::clone(&self.shake),
+      child: SnakeGrid {
+        on_die: {
+          let shake = Rc::clone(&self.shake);
+          Some(Box::new(move || shake.set(true)))
+        },
+      }
+      .into_view(),
+    }
+    .into_view()
   }
 }

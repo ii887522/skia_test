@@ -1,14 +1,14 @@
-use super::View;
-use crate::{models::Box2D, Context};
+use super::Node;
+use crate::models::Box2D;
 use skia_safe::{Canvas, Color, Paint, Rect};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct BoxView {
+pub struct BoxNode {
   pub color: Color,
 }
 
-impl View for BoxView {
-  fn draw(&self, _context: &Context, canvas: &Canvas, constraint: Box2D) {
+impl Node for BoxNode {
+  fn draw(&self, canvas: &Canvas, constraint: Box2D) {
     canvas.draw_rect(
       Rect::from_xywh(
         constraint.position.0,
