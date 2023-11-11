@@ -142,7 +142,7 @@ impl<OnDie> SnakeGridState<OnDie> {
 }
 
 impl<OnDie: FnMut()> State for SnakeGridState<OnDie> {
-  fn on_event(&mut self, context: &Context, event: &Event) {
+  fn on_event(&mut self, context: &mut Context, event: &Event) {
     if !self.change_snake_direction {
       return;
     }
@@ -211,7 +211,7 @@ impl<OnDie: FnMut()> State for SnakeGridState<OnDie> {
     }
   }
 
-  fn tick(&mut self, context: &Context, dt: f32) {
+  fn tick(&mut self, context: &mut Context, dt: f32) {
     let mut is_food_eaten = false;
 
     self.clock.advance(dt, |clock| {
