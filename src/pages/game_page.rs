@@ -40,7 +40,7 @@ impl GamePageState {
 }
 
 impl State for GamePageState {
-  fn tick(&mut self, _context: &Context, dt: f32) {
+  fn tick(&mut self, _context: &mut Context, dt: f32) {
     if self.shake.get() {
       self.shake_clock.advance(dt, |clock| {
         self.shake.set(false);

@@ -34,7 +34,7 @@ impl Default for GridNode {
 }
 
 impl Node for GridNode {
-  fn on_event(&mut self, context: &Context, event: &Event) {
+  fn on_event(&mut self, context: &mut Context, event: &Event) {
     // Preconditions
     debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
     debug_assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");
@@ -44,7 +44,7 @@ impl Node for GridNode {
     }
   }
 
-  fn tick(&mut self, context: &Context, dt: f32) {
+  fn tick(&mut self, context: &mut Context, dt: f32) {
     // Preconditions
     debug_assert_ne!(self.dim.0, 0, "dim.0 must be a positive integer");
     debug_assert_ne!(self.dim.1, 0, "dim.1 must be a positive integer");

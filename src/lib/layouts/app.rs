@@ -31,7 +31,7 @@ pub fn run(mut app: App) {
   if app.play_audio {
     // Initialize audio engine
     mixer::open_audio(44100, mixer::DEFAULT_FORMAT, 2, 256).unwrap();
-    CONTEXT.with(|context| context.init_audio());
+    CONTEXT.with_borrow_mut(|context| context.init_audio());
   }
 
   // Initialize SDL video subsystem
@@ -93,9 +93,7 @@ pub fn run(mut app: App) {
   // Game loop
   let mut event_pump = sdl.event_pump().unwrap();
   let mut prev = Instant::now();
-  CONTEXT.with(|context| {
-    let engine = context.get_engine();
-
+  CONTEXT.with_borrow_mut(|context| {
     loop {
       // Input
       for event in event_pump.poll_iter() {
@@ -103,11 +101,9 @@ pub fn run(mut app: App) {
           return;
         }
 
-        let engine = engine.borrow_mut();
-
         match &mut app.child {
-          Some(Sharable::Owned(child)) => Engine::on_event(engine, child, context, &event),
-          Some(Sharable::Shared(child)) => Engine::on_event(engine, &mut child.borrow_mut(), context, &event),
+          Some(Sharable::Owned(child)) => Engine::on_event(child, context, &event),
+          Some(Sharable::Shared(child)) => Engine::on_event(&mut child.borrow_mut(), context, &event),
           None => {},
         }
       }
@@ -121,11 +117,10 @@ pub fn run(mut app: App) {
       // Process
       while ticks_left > 0 && dt_left > 0f32 {
         let dt = dt_left.min(1f32 / 120f32); // 120 ticks per second
-        let engine = engine.borrow_mut();
 
         match &mut app.child {
-          Some(Sharable::Owned(child)) => Engine::tick(engine, child, context, dt),
-          Some(Sharable::Shared(child)) => Engine::tick(engine, &mut child.borrow_mut(), context, dt),
+          Some(Sharable::Owned(child)) => Engine::tick(child, context, dt),
+          Some(Sharable::Shared(child)) => Engine::tick(&mut child.borrow_mut(), context, dt),
           None => {},
         }
 
@@ -140,9 +135,8 @@ pub fn run(mut app: App) {
 
         // Draw the whole view tree given
         let size = (app.size.0 as _, app.size.1 as _);
-        let mut engine = engine.borrow_mut();
         match child {
-          Sharable::Owned(child) => engine.draw_view(
+          Sharable::Owned(child) => context.get_engine().draw_view(
             child,
             canvas,
             Box2D {
@@ -150,7 +144,7 @@ pub fn run(mut app: App) {
               size,
             },
           ),
-          Sharable::Shared(child) => engine.draw_view(
+          Sharable::Shared(child) => context.get_engine().draw_view(
             &mut child.borrow_mut(),
             canvas,
             Box2D {

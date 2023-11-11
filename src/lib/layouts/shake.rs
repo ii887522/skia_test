@@ -4,7 +4,6 @@ use crate::{
   models::Box2D,
   Context, View,
 };
-use sdl2::event::Event;
 use skia_safe::Canvas;
 use std::{
   cell::{Cell, RefCell},
@@ -79,23 +78,7 @@ impl ShakeState {
 }
 
 impl State for ShakeState {
-  fn on_event(&mut self, context: &Context, event: &Event) {
-    if let Some(child) = self.child.as_ref() {
-      match &mut *child.borrow_mut() {
-        View::StatelessLayout(layout) => layout.on_event(context, event),
-        View::StatefulLayout(layout) => context
-          .get_engine()
-          .borrow_mut()
-          .get_state(&mut **layout)
-          .borrow_mut()
-          .on_event(context, event),
-        View::MultiChildLayout(layout) => layout.on_event(context, event),
-        View::Node(node) => node.on_event(context, event),
-      };
-    }
-  }
-
-  fn tick(&mut self, _context: &Context, dt: f32) {
+  fn tick(&mut self, _context: &mut Context, dt: f32) {
     if self.is_enabled.get() {
       self.clock.advance(dt, |_| {
         self.angle = (thread_rand().next_u32() as f32 / u32::MAX as f32) * 2f32 * std::f32::consts::PI;
