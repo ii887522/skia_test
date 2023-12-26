@@ -143,7 +143,7 @@ impl<OnDie> SnakeGridState<OnDie> {
 
 impl<OnDie: FnMut()> State for SnakeGridState<OnDie> {
   fn on_event(&mut self, context: &mut Context, event: &Event) {
-    if !self.change_snake_direction {
+    if !self.clock.is_running() || !self.change_snake_direction {
       return;
     }
 
